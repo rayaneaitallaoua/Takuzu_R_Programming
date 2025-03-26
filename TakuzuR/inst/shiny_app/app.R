@@ -62,14 +62,17 @@ server <- function(input, output, session) {
         lapply(1:size, function(i) {
           fluidRow(
             lapply(1:size, function(j) {
-              cell_red <- check_rule_1(grid, i-1, j-1)
-              row_or_col_red <- check_rule_2(grid, i-1, j-1)
+              cell_red <- check_rule_1(grid, i - 1, j - 1)
+              row_or_col_red <- check_rule_2(grid, i - 1, j - 1)
+              duplicate_grid <- check_rule_3(grid)
 
               # Appliquer les couleurs selon les règles
               if (cell_red) {
                 color <- "red"
               } else if (row_or_col_red) {
-                color <- "lightcoral"  # Couleur plus douce pour signaler un déséquilibre de 0s/1s
+                color <- "lightcoral"
+              } else if (duplicate_grid) {
+                color <- "orange"
               } else {
                 color <- "white"
               }

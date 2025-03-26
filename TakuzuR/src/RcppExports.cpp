@@ -36,10 +36,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// checkRule3
+bool checkRule3(CharacterMatrix grid);
+RcppExport SEXP _TakuzuR_checkRule3(SEXP gridSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterMatrix >::type grid(gridSEXP);
+    rcpp_result_gen = Rcpp::wrap(checkRule3(grid));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_TakuzuR_checkRule1", (DL_FUNC) &_TakuzuR_checkRule1, 3},
     {"_TakuzuR_checkRule2", (DL_FUNC) &_TakuzuR_checkRule2, 3},
+    {"_TakuzuR_checkRule3", (DL_FUNC) &_TakuzuR_checkRule3, 1},
     {NULL, NULL, 0}
 };
 

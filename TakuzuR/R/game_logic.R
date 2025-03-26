@@ -19,3 +19,9 @@ check_rule_1 <- function(grid, i, j) {
 check_rule_2 <- function(grid, i, j) {
   checkRule2(grid, i, j)
 }
+
+#' Check if any rows or columns are identical (fully filled)
+#' @export
+check_rule_3 <- function(grid) {
+  checkRule3(grid)
+}

@@ -44,3 +44,42 @@ bool checkRule2(CharacterMatrix grid, int i, int j) {
 
   return false;
 }
+
+// [[Rcpp::export]]
+bool checkRule3(CharacterMatrix grid) {
+  int size = grid.nrow();
+
+  // Compare rows
+  for (int i = 0; i < size; i++) {
+    for (int j = i + 1; j < size; j++) {
+      bool identical = true;
+      for (int k = 0; k < size; k++) {
+        std::string a = Rcpp::as<std::string>(grid(i, k));
+        std::string b = Rcpp::as<std::string>(grid(j, k));
+        if (a == "" || b == "" || a != b) {
+          identical = false;
+          break;
+        }
+      }
+      if (identical) return true;  // Found duplicate row
+    }
+  }
+
+  // Compare columns
+  for (int i = 0; i < size; i++) {
+    for (int j = i + 1; j < size; j++) {
+      bool identical = true;
+      for (int k = 0; k < size; k++) {
+        std::string a = Rcpp::as<std::string>(grid(k, i));
+        std::string b = Rcpp::as<std::string>(grid(k, j));
+        if (a == "" || b == "" || a != b) {
+          identical = false;
+          break;
+        }
+      }
+      if (identical) return true;  // Found duplicate column
+    }
+  }
+
+  return false;  // No duplicates found
+}

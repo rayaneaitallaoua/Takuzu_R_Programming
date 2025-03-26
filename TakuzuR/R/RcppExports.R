@@ -9,3 +9,7 @@ checkRule2 <- function(grid, i, j) {
     .Call('_TakuzuR_checkRule2', PACKAGE = 'TakuzuR', grid, i, j)
 }
 
+checkRule3 <- function(grid) {
+    .Call('_TakuzuR_checkRule3', PACKAGE = 'TakuzuR', grid)
+}
+

@@ -2,6 +2,7 @@
 
 export(check_rule_1)
 export(check_rule_2)
+export(check_rule_3)
 export(generate_takuzu_grid)
 importFrom(Rcpp,sourceCpp)
 useDynLib(TakuzuR)
