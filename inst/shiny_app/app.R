@@ -69,14 +69,18 @@ iui <- fluidPage(
 
       # Grid + GIF in a row
       fluidRow(
-        column(
-          width = 9,
-          uiOutput("takuzu_grid_ui")
-        ),
-        column(
-          width = 3,
+        div(
+          style = "display: flex; align-items: center; justify-content: space-between;",
+
+          # Grid area
           div(
-            style = "min-height: 300px;",  # reserve space to avoid layout shift
+            style = "flex: 1; padding-left: 20px; padding-right: 20px; padding-bottom: 20px;",
+            uiOutput("takuzu_grid_ui")
+          ),
+
+          # GIF area
+          div(
+            style = "flex: 0 0 auto; min-width: 300px; padding-right: 20px; padding-bottom: 20px;",
             uiOutput("gif_message")
           )
         )
@@ -161,9 +165,9 @@ server <- function(input, output, session) {
     # Display GIFs for success or error using shinycustomloader
     output$gif_message <- renderUI({
       if (rule1_violated || rule2_violated || rule3_violated) {
-        withLoader(plotOutput("distPlot"), type = "image", loader = "false-wrong.gif")
+        tags$img(src = "false-wrong.gif", height = "300px")  # adjust as needed
       } else if (is_grid_complete && all_rules_respected) {
-        withLoader(plotOutput("distPlot"), type = "image", loader = "happy-dance-gif-5.gif")
+        tags$img(src = "happy-dance-gif-5.gif", height = "300px")
       } else {
         NULL
       }
