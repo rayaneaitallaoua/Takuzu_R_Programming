@@ -45,6 +45,7 @@ iui <- fluidPage(
 
   sidebarLayout(
     sidebarPanel(
+
       h3("Game Rules"),
       p("Takuzu (also called Binairo) is a logic puzzle game where you must fill the grid using 0s and 1s, following these rules:"),
       tags$ul(
@@ -58,12 +59,27 @@ iui <- fluidPage(
     ),
 
     mainPanel(
-      uiOutput("takuzu_grid_ui"),
+
+      # Top messages (always shown above the grid)
       div(
-        style = "margin-top: 20px;",
+        style = "margin-bottom: 10px; min-height: 80px;",  # fixed height to avoid movement
         uiOutput("error_messages"),
-        uiOutput("congratulations_message"),
-        uiOutput("gif_message")
+        uiOutput("congratulations_message")
+      ),
+
+      # Grid + GIF in a row
+      fluidRow(
+        column(
+          width = 9,
+          uiOutput("takuzu_grid_ui")
+        ),
+        column(
+          width = 3,
+          div(
+            style = "min-height: 300px;",  # reserve space to avoid layout shift
+            uiOutput("gif_message")
+          )
+        )
       )
     )
   )
