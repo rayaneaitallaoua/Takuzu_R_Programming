@@ -18,7 +18,7 @@ GitHub:
 devtools::install()
 
 # If hosted on GitHub:
-devtools::install_github("rayaneaitallaoua/Takuzu_R_Programming/tree/main/TakuzuR")
+devtools::install_github("rayaneaitallaoua/Takuzu_R_Programming")
 ```
 
 ## 🚀 Launch the Shiny App
