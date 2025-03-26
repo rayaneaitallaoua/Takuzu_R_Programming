@@ -58,21 +58,40 @@ server <- function(input, output, session) {
   observe({
     grid <- game_state$grid
     output$takuzu_grid_ui <- renderUI({
+      grid <- game_state$grid
+
+      # Check rule violations
+      rule1_violated <- any(sapply(1:size, function(i) {
+        any(sapply(1:size, function(j) check_rule_1(grid, i-1, j-1)))
+      }))
+
+      rule2_violated <- any(sapply(1:size, function(i) {
+        any(sapply(1:size, function(j) check_rule_2(grid, i-1, j-1)))
+      }))
+
+      rule3_violated <- check_rule_3(grid)
+
+      # Build UI
       tagList(
+        # Message above grid
+        if (rule1_violated)
+          tags$p("🔴 Rule violated: More than two identical values in a row/column.", style = "color: red; font-weight: bold;"),
+        if (rule2_violated)
+          tags$p("🔴 Rule violated: Unequal number of 0s and 1s in a full row/column.", style = "color: red; font-weight: bold;"),
+        if (rule3_violated)
+          tags$p("🔴 Rule violated: Two full rows or columns are identical.", style = "color: red; font-weight: bold;"),
+
+        # Grid rendering
         lapply(1:size, function(i) {
           fluidRow(
             lapply(1:size, function(j) {
               cell_red <- check_rule_1(grid, i - 1, j - 1)
               row_or_col_red <- check_rule_2(grid, i - 1, j - 1)
-              duplicate_grid <- check_rule_3(grid)
 
-              # Appliquer les couleurs selon les règles
               if (cell_red) {
                 color <- "red"
               } else if (row_or_col_red) {
                 color <- "lightcoral"
-              } else if (duplicate_grid) {
-                color <- "orange"
               } else {
                 color <- "white"
               }
@@ -80,7 +99,10 @@ server <- function(input, output, session) {
               actionButton(
                 inputId = paste0("cell_", i, "_", j),
                 label = as.character(grid[i, j]),
-                style = paste("width: 40px; height: 40px; font-size: 18px; margin: 2px; background-color:", color, ";")
+                style = paste(
+                  "width: 40px; height: 40px; font-size: 18px; margin: 2px; background-color:",
+                  color, ";"
+                )
               )
             })
           )
