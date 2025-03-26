@@ -2,10 +2,21 @@
 % Please edit documentation in R/game_logic.R
 \name{check_rule_2}
 \alias{check_rule_2}
-\title{Check if number of 0s and 1s differ in a full row/column}
+\title{Rule 2: Check for imbalance of 0s and 1s in row/column}
 \usage{
 check_rule_2(grid, i, j)
 }
+\arguments{
+\item{grid}{Character matrix representing the current Takuzu grid.}
+
+\item{i}{Row index (0-based).}
+
+\item{j}{Column index (0-based).}
+}
+\value{
+TRUE if there is an imbalance in a full row or column, FALSE otherwise.
+}
 \description{
-Check if number of 0s and 1s differ in a full row/column
+This function verifies if a full row or column contains unequal numbers of "0" and "1".
+Only fully filled rows or columns are checked.
 }

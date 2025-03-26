@@ -2,10 +2,17 @@
 % Please edit documentation in R/game_logic.R
 \name{generate_takuzu_grid}
 \alias{generate_takuzu_grid}
-\title{Generate a Takuzu grid with 0 and 1}
+\title{Generate a random Takuzu grid}
 \usage{
 generate_takuzu_grid(size = 8)
 }
+\arguments{
+\item{size}{Integer specifying the number of rows and columns (grid is square).}
+}
+\value{
+A character matrix with values "0" and "1".
+}
 \description{
-Generate a Takuzu grid with 0 and 1
+Creates a matrix of the specified size filled with random "0" and "1" characters.
+This function is primarily used for testing or generating a full solution grid.
 }

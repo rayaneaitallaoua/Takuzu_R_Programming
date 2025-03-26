@@ -2,10 +2,21 @@
 % Please edit documentation in R/game_logic.R
 \name{check_rule_1}
 \alias{check_rule_1}
-\title{Check if more than two consecutive values in a row/column}
+\title{Rule 1: Check for three consecutive identical values}
 \usage{
 check_rule_1(grid, i, j)
 }
+\arguments{
+\item{grid}{Character matrix representing the current Takuzu grid.}
+
+\item{i}{Row index (0-based).}
+
+\item{j}{Column index (0-based).}
+}
+\value{
+TRUE if the rule is violated, FALSE otherwise.
+}
 \description{
-Check if more than two consecutive values in a row/column
+This function checks whether placing a value at position (i, j) causes a violation
+of the rule that forbids three identical values consecutively in a row or column.
 }

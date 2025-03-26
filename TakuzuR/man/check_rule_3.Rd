@@ -2,10 +2,17 @@
 % Please edit documentation in R/game_logic.R
 \name{check_rule_3}
 \alias{check_rule_3}
-\title{Check if any rows or columns are identical (fully filled)}
+\title{Rule 3: Check for duplicate rows or columns}
 \usage{
 check_rule_3(grid)
 }
+\arguments{
+\item{grid}{Character matrix representing the current Takuzu grid.}
+}
+\value{
+TRUE if any full rows or columns are duplicates, FALSE otherwise.
+}
 \description{
-Check if any rows or columns are identical (fully filled)
+This function checks whether any two fully filled rows or columns are identical,
+which violates the uniqueness rule of the Takuzu game.
 }
