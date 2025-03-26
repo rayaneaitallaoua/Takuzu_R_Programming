@@ -1,9 +1,10 @@
 library(shiny)
 library(Rcpp)
 
-# C++ function to check Takuzu rule violation
+# C++ functions to check Takuzu rule violation
+#check if we don't have more than two consecutive 0 or 1s
 cppFunction('
-bool checkRule(CharacterMatrix grid, int i, int j) {
+bool checkRule1(CharacterMatrix grid, int i, int j) {
   int size = grid.nrow();
   std::string value = Rcpp::as<std::string>(grid(i, j));
 
@@ -23,10 +24,58 @@ bool checkRule(CharacterMatrix grid, int i, int j) {
 }
 ')
 
+#check if we  have the same number of 1 and 0 per collum or row
+cppFunction('bool checkRule2(CharacterMatrix grid, int i, int j) {
+  int size = grid.nrow();
+  int count0_row = 0, count1_row = 0;
+  int count0_col = 0, count1_col = 0;
+  bool row_full = true, col_full = true;
+
+  // Check row
+  for (int col = 0; col < size; col++) {
+    std::string val = Rcpp::as<std::string>(grid(i, col));
+    if (val == "") row_full = false;
+    else if (val == "0") count0_row++;
+    else if (val == "1") count1_row++;
+  }
+  if (row_full && count0_row != count1_row) return true;
+
+  // Check column
+  for (int row = 0; row < size; row++) {
+    std::string val = Rcpp::as<std::string>(grid(row, j));
+    if (val == "") col_full = false;
+    else if (val == "0") count0_col++;
+    else if (val == "1") count1_col++;
+  }
+  if (col_full && count0_col != count1_col) return true;
+
+  return false;
+}
+' )
+
 # Function to generate a starting grid with "", "0" and "1"
 generate_takuzu_grid <- function(size) {
-  values <- c("0", "1", "")  # Possible values
-  matrix(sample(values, size^2, replace = TRUE, prob = c(0.4, 0.4, 0.2)), nrow = size)
+  grid <- matrix("", nrow = size, ncol = size)  # Initialise une grille vide
+
+  # Définir une probabilité plus faible pour "0" et "1"
+  values <- c("0", "1", "")
+  probs <- c(0.2, 0.2, 0.6)  # Moins de 0 et 1, plus de vides
+
+  for (i in 1:size) {
+    for (j in 1:size) {
+      # Essayer d'attribuer un 0 ou un 1 avec probabilité faible
+      if (runif(1) < 0.3) {  # 30% de chance de mettre un chiffre
+        attempt_value <- sample(c("0", "1"), 1)
+        grid[i, j] <- attempt_value
+
+        # Vérifier si la règle est violée après ajout
+        if (checkRule1(grid, i-1, j-1)) {
+          grid[i, j] <- ""  # Annuler si cela cause un problème
+        }
+      }
+    }
+  }
+  return(grid)
 }
 
 ui <- fluidPage(
@@ -64,7 +113,18 @@ server <- function(input, output, session) {
         lapply(1:size, function(i) {
           fluidRow(
             lapply(1:size, function(j) {
-              color <- if (checkRule(grid, i-1, j-1)) "red" else "white"
+              cell_red <- checkRule1(grid, i-1, j-1)
+              row_or_col_red <- checkRule2(grid, i-1, j-1)
+
+              # Appliquer les couleurs selon les règles
+              if (cell_red) {
+                color <- "red"
+              } else if (row_or_col_red) {
+                color <- "lightcoral"  # Couleur plus douce pour signaler un déséquilibre de 0s/1s
+              } else {
+                color <- "white"
+              }
+
               actionButton(
                 inputId = paste0("cell_", i, "_", j),
                 label = as.character(grid[i, j]),
@@ -99,3 +159,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
