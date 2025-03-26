@@ -7,7 +7,6 @@ library(shinycustomloader)
 generate_takuzu_grid <- function(size, difficulty) {
   grid <- matrix("", nrow = size, ncol = size)
 
-  # Définir le pourcentage de cases préremplies selon la difficulté
   fill_ratio <- switch(difficulty,
                        "Easy" = 0.7,
                        "Medium" = 0.5,
@@ -22,9 +21,8 @@ generate_takuzu_grid <- function(size, difficulty) {
     attempt_value <- sample(c("0", "1"), 1)
     grid[i, j] <- attempt_value
 
-    # Vérifier que les règles ne sont pas violées après avoir ajouté une valeur
     if (check_rule_1(grid, i-1, j-1) || check_rule_2(grid, i-1, j-1) || check_rule_3(grid)) {
-      grid[i, j] <- ""  # Si une règle est violée, annuler la modification
+      grid[i, j] <- ""
     }
   }
 
@@ -51,9 +49,12 @@ ui <- fluidPage(
 
     mainPanel(
       uiOutput("takuzu_grid_ui"),
-      uiOutput("error_messages"),
-      uiOutput("congratulations_message"),  # Ajouter un message de félicitations
-      uiOutput("gif_message")  # Zone pour afficher les GIFs
+      div(
+        style = "margin-top: 20px;",
+        uiOutput("error_messages"),
+        uiOutput("congratulations_message"),
+        uiOutput("gif_message")
+      )
     )
   )
 )
@@ -65,7 +66,6 @@ server <- function(input, output, session) {
   observe({
     grid <- game_state$grid
 
-    # Vérification des violations de règles
     rule1_violated <- any(sapply(1:size, function(i) {
       any(sapply(1:size, function(j) check_rule_1(grid, i-1, j-1)))
     }))
@@ -79,41 +79,14 @@ server <- function(input, output, session) {
     output$takuzu_grid_ui <- renderUI({
       grid <- game_state$grid
 
-      # Check rule violations
-      rule1_violated <- any(sapply(1:size, function(i) {
-        any(sapply(1:size, function(j) check_rule_1(grid, i-1, j-1)))
-      }))
-
-      rule2_violated <- any(sapply(1:size, function(i) {
-        any(sapply(1:size, function(j) check_rule_2(grid, i-1, j-1)))
-      }))
-
-      rule3_violated <- check_rule_3(grid)
-
-      # Build UI
       tagList(
-        # Message above grid
-        if (rule1_violated)
-          tags$p("🔴 Rule violated: More than two identical values in a row/column.", style = "color: red; font-weight: bold;"),
-        if (rule2_violated)
-          tags$p("🔴 Rule violated: Unequal number of 0s and 1s in a full row/column.", style = "color: red; font-weight: bold;"),
-        if (rule3_violated)
-          tags$p("🔴 Rule violated: Two full rows or columns are identical.", style = "color: red; font-weight: bold;"),
-
-        # Grid rendering
         lapply(1:size, function(i) {
           fluidRow(
             lapply(1:size, function(j) {
               cell_red <- check_rule_1(grid, i - 1, j - 1)
               row_or_col_red <- check_rule_2(grid, i - 1, j - 1)
 
-              if (cell_red) {
-                color <- "red"
-              } else if (row_or_col_red) {
-                color <- "lightcoral"
-              } else {
-                color <- "white"
-              }
+              color <- if (cell_red) "red" else if (row_or_col_red) "lightcoral" else "white"
 
               actionButton(
                 inputId = paste0("cell_", i, "_", j),
@@ -127,6 +100,30 @@ server <- function(input, output, session) {
           )
         })
       )
+    })
+
+    # Affichage des messages sous la grille
+    output$error_messages <- renderUI({
+      tagList(
+        if (rule1_violated)
+          tags$p("🔴 Rule violated: More than two identical values in a row/column.", style = "color: red; font-weight: bold;"),
+        if (rule2_violated)
+          tags$p("🔴 Rule violated: Unequal number of 0s and 1s in a full row/column.", style = "color: red; font-weight: bold;"),
+        if (rule3_violated)
+          tags$p("🔴 Rule violated: Two full rows or columns are identical.", style = "color: red; font-weight: bold;")
+      )
+    })
+
+    is_grid_complete <- all(grid != "")
+    all_rules_respected <- !rule1_violated && !rule2_violated && !rule3_violated
+
+    output$congratulations_message <- renderUI({
+      if (is_grid_complete && all_rules_respected) {
+        tags$p("🎉 Congratulations! You've completed the Takuzu grid correctly!",
+               style = "color: green; font-weight: bold; font-size: 20px;")
+      } else {
+        NULL
+      }
     })
 
     # Affichage des messages d'erreur en bas de la grille
