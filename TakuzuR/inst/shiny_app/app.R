@@ -1,9 +1,19 @@
+#' Takuzu Shiny App
+#'
+#' This application allows the user to play Takuzu interactively in the browser. It follows all three game rules
+#' and supports multiple difficulty levels. Grid cells are colored according to rule violations and display
+#' appropriate messages for feedback. A congratulatory message and visual feedback are shown upon completion.
+
 library(shiny)
 library(Rcpp)
 library(TakuzuR)
 library(shinycustomloader)
 
-# Fonction pour générer une grille Takuzu avec différents niveaux de difficulté en respectant les règles
+#' Generate a Takuzu grid based on difficulty
+#'
+#' @param size Integer, size of the Takuzu grid (default is 8x8)
+#' @param difficulty Character, one of "Easy", "Medium", or "Hard"
+#' @return A character matrix of Takuzu grid values with some prefilled cells
 generate_takuzu_grid <- function(size, difficulty) {
   grid <- matrix("", nrow = size, ncol = size)
 
@@ -21,15 +31,16 @@ generate_takuzu_grid <- function(size, difficulty) {
     attempt_value <- sample(c("0", "1"), 1)
     grid[i, j] <- attempt_value
 
+    # Remove the value if it breaks a rule
     if (check_rule_1(grid, i-1, j-1) || check_rule_2(grid, i-1, j-1) || check_rule_3(grid)) {
       grid[i, j] <- ""
     }
   }
-
   return(grid)
 }
 
-ui <- fluidPage(
+# User Interface layout
+iui <- fluidPage(
   titlePanel("Takuzu Game"),
 
   sidebarLayout(
@@ -42,7 +53,6 @@ ui <- fluidPage(
         tags$li("No two rows or two columns can be identical."),
         tags$li("Click a cell to toggle its value (empty → 0 → 1 → empty).")
       ),
-      br(),
       selectInput("difficulty", "Choose Difficulty:", choices = c("Easy", "Medium", "Hard")),
       actionButton("new_game", "New Game", class = "btn-primary")
     ),
@@ -59,6 +69,9 @@ ui <- fluidPage(
   )
 )
 
+#' Server logic
+#'
+#' Observes game state, updates the UI, handles cell toggling and error messaging.
 server <- function(input, output, session) {
   size <- 8
   game_state <- reactiveValues(grid = generate_takuzu_grid(size, "Easy"))
@@ -66,6 +79,7 @@ server <- function(input, output, session) {
   observe({
     grid <- game_state$grid
 
+    # Check if any rule is violated across the entire grid
     rule1_violated <- any(sapply(1:size, function(i) {
       any(sapply(1:size, function(j) check_rule_1(grid, i-1, j-1)))
     }))
@@ -76,6 +90,7 @@ server <- function(input, output, session) {
 
     rule3_violated <- check_rule_3(grid)
 
+    # Render the grid buttons with appropriate color based on rule violations
     output$takuzu_grid_ui <- renderUI({
       grid <- game_state$grid
 
@@ -102,7 +117,7 @@ server <- function(input, output, session) {
       )
     })
 
-    # Affichage des messages sous la grille
+    # Display rule violation messages
     output$error_messages <- renderUI({
       tagList(
         if (rule1_violated)
@@ -114,6 +129,7 @@ server <- function(input, output, session) {
       )
     })
 
+    # Display congratulatory message if grid is complete and valid
     is_grid_complete <- all(grid != "")
     all_rules_respected <- !rule1_violated && !rule2_violated && !rule3_violated
 
@@ -126,45 +142,19 @@ server <- function(input, output, session) {
       }
     })
 
-    # Affichage des messages d'erreur en bas de la grille
-    output$error_messages <- renderUI({
-      tagList(
-        if (rule1_violated)
-          tags$p("🔴 Rule violated: More than two identical values in a row/column.", style = "color: red; font-weight: bold;"),
-        if (rule2_violated)
-          tags$p("🔴 Rule violated: Unequal number of 0s and 1s in a full row/column.", style = "color: red; font-weight: bold;"),
-        if (rule3_violated)
-          tags$p("🔴 Rule violated: Two full rows or columns are identical.", style = "color: red; font-weight: bold;")
-      )
-    })
-
-    # Vérification si la grille est complète et respecte les règles
-    is_grid_complete <- all(grid != "")  # Vérifie que toutes les cases sont remplies
-    all_rules_respected <- !rule1_violated && !rule2_violated && !rule3_violated
-
-    # Affichage du message de félicitations si la grille est complète et les règles sont respectées
-    output$congratulations_message <- renderUI({
-      if (is_grid_complete && all_rules_respected) {
-        tags$p("🎉 Congratulations! You've completed the Takuzu grid correctly!", style = "color: green; font-weight: bold; font-size: 20px;")
-      } else {
-        NULL  # Aucun message si la grille n'est pas complète ou les règles ne sont pas respectées
-      }
-    })
-
-    # Affichage du GIF en cas d'erreur ou de succès
+    # Display GIFs for success or error using shinycustomloader
     output$gif_message <- renderUI({
       if (rule1_violated || rule2_violated || rule3_violated) {
-        # Utiliser shinycustomloader pour afficher un GIF d'erreur
         withLoader(plotOutput("distPlot"), type = "image", loader = "false-wrong.gif")
       } else if (is_grid_complete && all_rules_respected) {
-        # Utiliser shinycustomloader pour afficher un GIF de succès
         withLoader(plotOutput("distPlot"), type = "image", loader = "happy-dance-gif-5.gif")
       } else {
-        NULL  # Aucun GIF si aucune erreur et pas de succès
+        NULL
       }
     })
   })
 
+  # Observe all cell clicks and update values cyclically ("" -> "0" -> "1" -> "")
   observe({
     lapply(1:size, function(i) {
       lapply(1:size, function(j) {
@@ -178,11 +168,11 @@ server <- function(input, output, session) {
     })
   })
 
+  # Generate a new grid based on difficulty input when "New Game" is clicked
   observeEvent(input$new_game, {
     game_state$grid <- generate_takuzu_grid(size, input$difficulty)
   })
 }
 
-shinyApp(ui, server)
-
-
+#' Launch the Shiny app
+shinyApp(iui, server)
