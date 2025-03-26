@@ -1,57 +1,6 @@
 library(shiny)
 library(Rcpp)
-
-# C++ functions to check Takuzu rule violation
-#check if we don't have more than two consecutive 0 or 1s
-cppFunction('
-bool checkRule1(CharacterMatrix grid, int i, int j) {
-  int size = grid.nrow();
-  std::string value = Rcpp::as<std::string>(grid(i, j));
-
-  if (value == "") return false;  // Ignore empty cells
-
-  // Check horizontal rule
-  if (j > 1 && grid(i, j-1) == value && grid(i, j-2) == value) return true;
-  if (j < size - 2 && grid(i, j+1) == value && grid(i, j+2) == value) return true;
-  if (j > 0 && j < size - 1 && grid(i, j-1) == value && grid(i, j+1) == value) return true;
-
-  // Check vertical rule
-  if (i > 1 && grid(i-1, j) == value && grid(i-2, j) == value) return true;
-  if (i < size - 2 && grid(i+1, j) == value && grid(i+2, j) == value) return true;
-  if (i > 0 && i < size - 1 && grid(i-1, j) == value && grid(i+1, j) == value) return true;
-
-  return false;
-}
-')
-
-#check if we  have the same number of 1 and 0 per collum or row
-cppFunction('bool checkRule2(CharacterMatrix grid, int i, int j) {
-  int size = grid.nrow();
-  int count0_row = 0, count1_row = 0;
-  int count0_col = 0, count1_col = 0;
-  bool row_full = true, col_full = true;
-
-  // Check row
-  for (int col = 0; col < size; col++) {
-    std::string val = Rcpp::as<std::string>(grid(i, col));
-    if (val == "") row_full = false;
-    else if (val == "0") count0_row++;
-    else if (val == "1") count1_row++;
-  }
-  if (row_full && count0_row != count1_row) return true;
-
-  // Check column
-  for (int row = 0; row < size; row++) {
-    std::string val = Rcpp::as<std::string>(grid(row, j));
-    if (val == "") col_full = false;
-    else if (val == "0") count0_col++;
-    else if (val == "1") count1_col++;
-  }
-  if (col_full && count0_col != count1_col) return true;
-
-  return false;
-}
-' )
+library(TakuzuR)
 
 # Function to generate a starting grid with "", "0" and "1"
 generate_takuzu_grid <- function(size) {
@@ -69,7 +18,7 @@ generate_takuzu_grid <- function(size) {
         grid[i, j] <- attempt_value
 
         # Vérifier si la règle est violée après ajout
-        if (checkRule1(grid, i-1, j-1)) {
+        if (check_rule_1(grid, i-1, j-1)) {
           grid[i, j] <- ""  # Annuler si cela cause un problème
         }
       }
@@ -113,8 +62,8 @@ server <- function(input, output, session) {
         lapply(1:size, function(i) {
           fluidRow(
             lapply(1:size, function(j) {
-              cell_red <- checkRule1(grid, i-1, j-1)
-              row_or_col_red <- checkRule2(grid, i-1, j-1)
+              cell_red <- check_rule_1(grid, i-1, j-1)
+              row_or_col_red <- check_rule_2(grid, i-1, j-1)
 
               # Appliquer les couleurs selon les règles
               if (cell_red) {
