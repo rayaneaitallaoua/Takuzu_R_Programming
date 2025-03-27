@@ -19,6 +19,31 @@ bool check_rule_1(CharacterMatrix grid, int i, int j) {
     return false;
 }
 
+// [[Rcpp::export]]
+bool checkRule2(CharacterMatrix grid, int i, int j) {
+  int size = grid.nrow();
+  int count0_row = 0, count1_row = 0;
+  int count0_col = 0, count1_col = 0;
+  bool row_full = true, col_full = true;
+  
+  for (int col = 0; col < size; col++) {
+    std::string val = Rcpp::as<std::string>(grid(i, col));
+    if (val == "") row_full = false;
+    else if (val == "0") count0_row++;
+    else if (val == "1") count1_row++;
+  }
+  if (row_full && count0_row != count1_row) return true;
+  
+  for (int row = 0; row < size; row++) {
+    std::string val = Rcpp::as<std::string>(grid(row, j));
+    if (val == "") col_full = false;
+    else if (val == "0") count0_col++;
+    else if (val == "1") count1_col++;
+  }
+  if (col_full && count0_col != count1_col) return true;
+  
+  return false;
+}
 
 // [[Rcpp::export]]
 std::vector<int> check_rule_3(CharacterMatrix grid) {
