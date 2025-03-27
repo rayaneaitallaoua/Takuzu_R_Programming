@@ -53,3 +53,4 @@ check_rule_2 <- function(grid, i, j) {
 check_rule_3 <- function(grid) {
   checkRule3(grid)
 }
+
