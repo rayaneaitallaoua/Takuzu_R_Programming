@@ -37,12 +37,12 @@ generate_takuzu_grid <- function(size, difficulty) {
 
 # User Interface layout
 iui <- fluidPage(
-  
+
   titlePanel("Takuzu Game"),
   actionButton("play_music", "🎵 Play Music"),
   actionButton("pause_music", "⏸️ Pause Music"),
   tags$audio(id = "bg_music", src = "theme.mp3", type = "audio/mp3", autoplay = NA, loop = NA),
-  
+
   # JS to control
   tags$script(HTML("
   $('#play_music').on('click', function() {
@@ -52,7 +52,7 @@ iui <- fluidPage(
     document.getElementById('bg_music').pause();
   });
 ")),
-  
+
   sidebarLayout(
     sidebarPanel(
       h3("Game Rules"),
@@ -69,7 +69,8 @@ iui <- fluidPage(
     mainPanel(
       # Top messages (always shown above the grid)
       div(
-        style = "margin-bottom: 10px; min-height: 80px;", # fixed height to avoid movement
+        style = "height: 200px; overflow: hidden; display: flex;
+                 flex-direction: column; justify-content: center;",
         uiOutput("error_messages"),
         uiOutput("congratulations_message")
       ),
@@ -84,7 +85,7 @@ iui <- fluidPage(
           ),
           # GIF area
           div(
-            style = "flex: 0 0 auto; min-width: 300px; padding-right: 20px; padding-bottom: 20px;",
+            style = "flex: 0 0 300px; padding-right: 20px; padding-bottom: 20px;",
             uiOutput("gif_message")
           )
         )
@@ -99,7 +100,7 @@ iui <- fluidPage(
 server <- function(input, output, session) {
   size <- 8
   game_state <- reactiveValues(grid = generate_takuzu_grid(size, "Easy"))
-  
+
   observe({
     grid <- game_state$grid
     # Check if any rule is violated across the entire grid
@@ -110,11 +111,11 @@ server <- function(input, output, session) {
       any(sapply(1:size, function(j) check_rule_2(grid, i-1, j-1)))
     }))
     rule3_violations <- check_rule_3(grid)
-    
+
     has_identical_rows <- any(sapply(rule3_violations, function(x) x == 1))
     has_identical_cols <- any(sapply(rule3_violations, function(x) x == -1))
-    
-    
+
+
     # Render the grid buttons with appropriate color based on rule violations
     output$takuzu_grid_ui <- renderUI({
       grid <- game_state$grid
@@ -138,7 +139,7 @@ server <- function(input, output, session) {
         })
       )
     })
-    
+
     # Display rule violation messages
     output$error_messages <- renderUI({
       tagList(
@@ -152,12 +153,12 @@ server <- function(input, output, session) {
           tags$p("🔴 Rule violated: Two identical columns.", style = "color: red; font-weight: bold;")
       )
     })
-    
+
     # Display congratulatory message if grid is complete and valid
     is_grid_complete <- all(grid != "")
-    is_grid_half_complete <- (sum(apply(grid, 1, function(row) all(row != ""))) >= size / 2) || 
+    is_grid_half_complete <- (sum(apply(grid, 1, function(row) all(row != ""))) >= size / 2) ||
       (sum(apply(grid, 2, function(col) all(col != ""))) >= size / 2)
-    
+
     all_rules_respected <- !rule1_violated && !rule2_violated && !has_identical_rows && !has_identical_cols
     output$congratulations_message <- renderUI({
       if (is_grid_complete && all_rules_respected) {
@@ -170,26 +171,26 @@ server <- function(input, output, session) {
         NULL
       }
     })
-    
+
     # Display GIFs for success or error using shinycustomloader
     output$gif_message <- renderUI({
       if (rule1_violated && rule2_violated ) {
-        tags$img(src = "no.gif", height = "700px") # adjust as needed
+        tags$img(src = "no.gif",  style = "max-width: 300px; max-height: 100%;")
       } else if (rule1_violated ) {
-        tags$img(src = "false-wrong.gif", height = "700px") # adjust as needed
+        tags$img(src = "false-wrong.gif",  style = "max-width: 300px; max-height: 100%;")
       } else if (has_identical_rows || has_identical_cols ) {
-        tags$img(src = "the-office-michael-scott.gif", height = "400px") # adjust as needed
+        tags$img(src = "the-office-michael-scott.gif",  style = "max-width: 300px; max-height: 100%;")
       } else if(is_grid_half_complete && all_rules_respected ) {
-        tags$img(src = "dance.gif", height = "400px") # adjust as needed
-        
+        tags$img(src = "dance.gif",  style = "max-width: 300px; max-height: 100%;")
+
       } else if (is_grid_complete && all_rules_respected) {
-        tags$img(src = "happy-dance-gif-5.gif", height = "300px")
+        tags$img(src = "happy-dance-gif-5.gif",  style = "max-width: 300px; max-height: 100%;")
       } else {
         NULL
       }
     })
   })
-  
+
   # Observe all cell clicks and update values cyclically ("" -> "0" -> "1" -> "")
   observe({
     lapply(1:size, function(i) {
@@ -203,7 +204,7 @@ server <- function(input, output, session) {
       })
     })
   })
-  
+
   # Generate a new grid based on difficulty input when "New Game" is clicked
   observeEvent(input$new_game, {
     game_state$grid <- generate_takuzu_grid(size, input$difficulty)
