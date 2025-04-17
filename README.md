@@ -14,16 +14,12 @@ To install the development version from your local project or from
 GitHub:
 
 ``` r
-# If local project:
-devtools::install()
-
-# If hosted on GitHub:
 devtools::install_github("rayaneaitallaoua/Takuzu_R_Programming")
 ```
 
 ## 🚀 Launch the Shiny App
 
-Run the Takuzu game interactively:
+Run the Takuzu game:
 
 ``` r
 shiny::runApp(system.file("shiny_app", package = "TakuzuR"))
@@ -50,9 +46,6 @@ TakuzuR::check_rule_1(grid, i, j)
 TakuzuR::check_rule_2(grid, i, j)
 TakuzuR::check_rule_3(grid)
 ```
-
-These functions are used internally by the Shiny app but can also be
-tested interactively.
 
 ## ✍️ Authors
 
